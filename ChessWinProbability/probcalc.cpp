@@ -30,7 +30,7 @@ ResultDistr ProbCalc::calculateMatchProbablity(PlayerHistory hist, int gamesplay
 	matchDistr.playerOneProb = 0.0;
 	matchDistr.playerTwoProb = 0.0;
 	
-	if(playerOnePoints + playerTwoPoints != gamesplayed)
+	if(!assertFloat(playerOnePoints + playerTwoPoints, (float)gamesplayed))
 	{
 		printf("Something is off with your math dude");
 		return matchDistr;
@@ -71,9 +71,10 @@ ResultDistr ProbCalc::calculateMatchProbablity(PlayerHistory hist, int gamesplay
 
 	ResultDistr historyDistr = hist.resultDistributionFromHistory();
 	ResultDistr eloDistr;
+
 	if(useDrawHistory)
 	{
-		eloDistr = hist.resultDistributionFromELO(true, 0);
+		eloDistr = hist.resultDistributionFromELO(true, drawProbDefault);
 	}
 	else
 	{
@@ -155,13 +156,13 @@ float ProbCalc::calculateInternalProbabilityForDraw(int gamesleft, int pointsbeh
 {
 	float total = 0;
 
-	for (int i = pointsbehind-1; i < gamesleft-pointsbehind+1; i++)
+	for (int i = pointsbehind-1; 2*i-pointsbehind <= gamesleft-1; i++)
 	{ 
 		float winChance = 0;
-		int otherWinCount = i - pointsbehind+1;
+		int j = i - pointsbehind + 1;
 
 		//Calculate for i wins, i-pointsbehind loses, and gamesleft-i-otherwinCount draws
-		winChance = (factorial(gamesleft)/(factorial(i)*factorial(gamesleft-i)))*pow(probWin, i)*pow(probDraw, gamesleft-i-otherWinCount)*pow(probLose, otherWinCount);
+		winChance = (factorial(gamesleft)/(factorial(i)*factorial(gamesleft-i-j)*factorial(j)))*pow(probWin, i)*pow(probDraw, gamesleft-i-j)*pow(probLose, j);
 		total += winChance;
 	}
 	return total;
